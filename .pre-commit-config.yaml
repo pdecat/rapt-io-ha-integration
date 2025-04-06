@@ -1,0 +1,42 @@
+default_install_hook_types: [commit-msg, pre-commit]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        stages: [pre-commit]
+      - id: end-of-file-fixer
+        stages: [pre-commit]
+      - id: check-added-large-files
+        stages: [pre-commit]
+      - id: check-json
+        stages: [pre-commit]
+      - id: check-toml
+        stages: [pre-commit]
+      - id: check-yaml
+        stages: [pre-commit]
+        args: [--allow-multiple-documents]
+      - id: pretty-format-json
+        stages: [pre-commit]
+        args:
+          - --autofix
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.4
+    hooks:
+      - id: ruff
+        stages: [pre-commit]
+      - id: ruff-format
+        stages: [pre-commit]
+
+  - repo: https://github.com/frnmst/md-toc
+    rev: 9.0.0
+    hooks:
+      - id: md-toc
+        stages: [pre-commit]
+
+  - repo: https://github.com/crate-ci/committed
+    rev: v1.1.7
+    hooks:
+      - id: committed
+        stages: [commit-msg]

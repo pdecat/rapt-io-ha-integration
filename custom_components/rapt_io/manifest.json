@@ -1,0 +1,20 @@
+{
+  "codeowners": [
+    "@pdecat"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/pdecat/rapt-io-ha-integration",
+  "domain": "rapt_io",
+  "homeassistant": "2025.3.0",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/pdecat/rapt-io-ha-integration/issues",
+  "loggers": [
+    "custom_components.rapt_io"
+  ],
+  "name": "RAPT.io",
+  "platforms": [
+    "sensor"
+  ],
+  "requirements": [],
+  "version": "0.1.0"
+}

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rapt_io"
+version = "0.1.0"
+description = "Home Assistant custom component for RAPT.io devices"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "MIT" }
+dependencies = ["homeassistant>=2025.3.0"]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.5",
+  "pytest-asyncio>=0.26.0",
+  "pytest-homeassistant-custom-component>=0.13.233",
+]
+
+[tool.hatch.metadata]
+allow-direct-url = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["custom_components/rapt_io"]
+
+[tool.ruff]
+line-length = 120
+src = ["custom_components/rapt_io"]
+
+[tool.pytest.ini_options]
+# Setting this to auto breaks tests
+asyncio_mode = "auto"
+# asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
