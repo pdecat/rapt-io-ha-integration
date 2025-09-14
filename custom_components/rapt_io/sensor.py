@@ -67,8 +67,9 @@ class RaptBaseSensor(CoordinatorEntity, SensorEntity):
             identifiers={(DOMAIN, self._device_id)},
             name=device.get("name"),
             manufacturer="RAPT",
-            model=device.get("type", "Unknown Device"),
-            # sw_version=... # If available
+            model=device.get("deviceType"),
+            sw_version=device.get("firmwareVersion"),
+            hw_version=device.get("id"),
         )
 
     @property
