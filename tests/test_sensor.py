@@ -14,11 +14,11 @@ async def test_sensors(hass: HomeAssistant, config_entry):
 
     # Mock device and telemetry data
     mock_brewzilla_id = "a1b2c3d4-e5f6-7890-1234-567890abcdef"
-    mock_brewzillas = [{"id": mock_brewzilla_id, "name": "My Test BrewZilla", "telemetry": {}}]
+    mock_brewzillas = [{"id": mock_brewzilla_id, "name": "My Test BrewZilla", "deviceType": "BrewZilla"}]
     mock_bonded_device_id = "e5f6a1b2-c3d4-5678-9012-345678abcdef"
-    mock_bonded_devices = [{"id": mock_bonded_device_id, "name": "My BLE Thermometer", "type": "Thermometer"}]
+    mock_bonded_devices = [{"id": mock_bonded_device_id, "name": "My BLE Thermometer", "deviceType": "BLETemperature"}]
     mock_hydrometer_id = "f1e2d3c4-b5a6-7890-1234-567890abcdef"
-    mock_hydrometers = [{"id": mock_hydrometer_id, "name": "My RAPT Pill", "gravity": 1.050}]
+    mock_hydrometers = [{"id": mock_hydrometer_id, "name": "My RAPT Pill", "deviceType": "Hydrometer"}]
     mock_data = {
         mock_brewzilla_id: {"temperature": 65.5, "status": "Mashing"},
         mock_bonded_device_id: {"temperature": 22.2},

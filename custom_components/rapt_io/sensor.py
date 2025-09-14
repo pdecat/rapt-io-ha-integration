@@ -36,14 +36,17 @@ async def async_setup_entry(
     for device in coordinator.devices:
         device_id = device.get("id")
         if device_id:
-            if "telemetry" in device and isinstance(device["telemetry"], dict):  # BrewZilla
+            device_type = device.get("deviceType")
+            if device_type == "BrewZilla":
                 entities_to_add.append(RaptTemperatureSensor(coordinator, device))
                 entities_to_add.append(RaptStatusSensor(coordinator, device))
-            elif "gravity" in device:  # Hydrometer
+            elif device_type == "Hydrometer":
                 entities_to_add.append(RaptTemperatureSensor(coordinator, device))
                 entities_to_add.append(RaptGravitySensor(coordinator, device))
-            else:  # Bonded Device
+            elif device_type == "BLETemperature":
                 entities_to_add.append(RaptTemperatureSensor(coordinator, device))
+            else:
+                _LOGGER.warning("Unsupported device type: %s", device_type)
 
     if entities_to_add:
         async_add_entities(entities_to_add)

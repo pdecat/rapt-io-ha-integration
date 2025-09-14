@@ -53,12 +53,16 @@ class RaptDataUpdateCoordinator(DataUpdateCoordinator):
                     try:
                         # BrewZillas have a 'telemetry' object in their GetBrewZillas response
                         # Bonded devices do not. This is a heuristic to differentiate them.
-                        if "telemetry" in device and isinstance(device["telemetry"], dict):  # BrewZilla
+                        device_type = device.get("deviceType")
+                        if device_type == "BrewZilla":
                             data = await self.client.get_brewzilla(device_id)
-                        elif "gravity" in device:  # Hydrometer
+                        elif device_type == "Hydrometer":
                             data = await self.client.get_hydrometer(device_id)
-                        else:  # Bonded Device
+                        elif device_type == "BLETemperature":
                             data = await self.client.get_bonded_device(device_id)
+                        else:
+                            _LOGGER.warning("Unsupported device type: %s", device_type)
+                            data = None
                         if data:
                             telemetry_data[device_id] = data
                     except RaptApiError as err:
