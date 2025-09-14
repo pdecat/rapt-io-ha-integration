@@ -33,10 +33,14 @@ You can configure the polling frequency for this integration. A lower value mean
 
 ## Usage
 
-The integration will create the following sensors for each RAPT.io device:
+The integration will create the following sensors for each supported RAPT.io device:
 
-*   `sensor.rapt_io_device_name_temperature`: The current temperature of the device.
-*   `sensor.rapt_io_device_name_status`: The current status of the device (e.g., Mashing, Boiling).
+### BrewZilla
+*   `sensor.brewzilla_name_temperature`: The current temperature of the BrewZilla.
+*   `sensor.brewzilla_name_status`: The current status of the BrewZilla (e.g., Mashing, Boiling).
+
+### Bonded Devices (e.g., BLE Thermometers)
+*   `sensor.bonded_device_name_temperature`: The current temperature of the bonded device.
 
 ## Troubleshooting
 
@@ -86,7 +90,6 @@ ruff format .
 
 The following features are planned for future releases:
 
-*   Support for bonded devices (e.g. BLE Thermometers).
 *   Support for hydrometer devices (e.g. RAPT Pills).
 *   Ability to backfill historical telemetry data.
 *   Support for managing and interacting with brewing profiles.

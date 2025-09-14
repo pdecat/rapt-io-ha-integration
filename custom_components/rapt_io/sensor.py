@@ -36,8 +36,11 @@ async def async_setup_entry(
     for device in coordinator.devices:
         device_id = device.get("id")
         if device_id:
-            entities_to_add.append(RaptTemperatureSensor(coordinator, device))
-            entities_to_add.append(RaptStatusSensor(coordinator, device))
+            if "telemetry" in device:  # BrewZilla
+                entities_to_add.append(RaptTemperatureSensor(coordinator, device))
+                entities_to_add.append(RaptStatusSensor(coordinator, device))
+            else:  # Bonded Device
+                entities_to_add.append(RaptTemperatureSensor(coordinator, device))
 
     if entities_to_add:
         async_add_entities(entities_to_add)
@@ -58,7 +61,7 @@ class RaptBaseSensor(CoordinatorEntity, SensorEntity):
             identifiers={(DOMAIN, self._device_id)},
             name=device.get("name"),
             manufacturer="RAPT",
-            model="BrewZilla",
+            model=device.get("type", "BrewZilla"),
             # sw_version=... # If available
         )
 

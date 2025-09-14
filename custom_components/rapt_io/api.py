@@ -167,3 +167,35 @@ class RaptApiClient:
     async def __aexit__(self, exc_type, exc, tb):
         """Async context manager exit."""
         await self.close()
+
+    async def get_bonded_devices(self) -> list[dict]:
+        """Fetch the list of Bonded devices from the API."""
+        _LOGGER.info("Fetching Bonded Devices from RAPT.io API")
+        return await self._api_wrapper(self._get_bonded_devices_internal)
+
+    async def _get_bonded_devices_internal(self) -> list[dict]:
+        """Internal method to fetch Bonded Devices."""
+        url = f"{self._base_url}/api/BondedDevices/GetBondedDevices"
+        response = await self._request("get", url)
+        if isinstance(response, list):
+            _LOGGER.debug("Received %d Bonded Devices", len(response))
+            return response
+        else:
+            _LOGGER.error("Unexpected Bonded Device list format received: %s", response)
+            raise RaptApiError("Unexpected format for Bonded Device list")
+
+    async def get_bonded_device(self, bonded_device_id: str) -> dict:
+        """Fetch the latest data for a specific Bonded Device."""
+        _LOGGER.info("Fetching data for Bonded Device %s", bonded_device_id)
+        return await self._api_wrapper(self._get_bonded_device_internal, bonded_device_id)
+
+    async def _get_bonded_device_internal(self, bonded_device_id: str) -> dict:
+        """Internal method to fetch Bonded Device data."""
+        url = f"{self._base_url}/api/BondedDevices/GetBondedDevice?bondedDeviceId={bonded_device_id}"
+        response = await self._request("get", url)
+        if isinstance(response, dict):
+            _LOGGER.debug("Bonded Device data received: %s", response)
+            return response
+        else:
+            _LOGGER.error("Unexpected Bonded Device data format received: %s", response)
+            raise RaptApiError("Unexpected format for Bonded Device data")

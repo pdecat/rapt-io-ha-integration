@@ -14,8 +14,13 @@ async def test_sensors(hass: HomeAssistant, config_entry):
 
     # Mock device and telemetry data
     mock_brewzilla_id = "a1b2c3d4-e5f6-7890-1234-567890abcdef"
-    mock_brewzillas = [{"id": mock_brewzilla_id, "name": "My Test BrewZilla"}]
-    mock_telemetry = {mock_brewzilla_id: {"temperature": 65.5, "status": "Mashing"}}
+    mock_brewzillas = [{"id": mock_brewzilla_id, "name": "My Test BrewZilla", "telemetry": {}}]
+    mock_bonded_device_id = "e5f6a1b2-c3d4-5678-9012-345678abcdef"
+    mock_bonded_devices = [{"id": mock_bonded_device_id, "name": "My BLE Thermometer", "type": "Thermometer"}]
+    mock_data = {
+        mock_brewzilla_id: {"temperature": 65.5, "status": "Mashing"},
+        mock_bonded_device_id: {"temperature": 22.2},
+    }
 
     with (
         patch(
@@ -23,8 +28,16 @@ async def test_sensors(hass: HomeAssistant, config_entry):
             return_value=mock_brewzillas,
         ),
         patch(
+            "custom_components.rapt_io.RaptApiClient.get_bonded_devices",
+            return_value=mock_bonded_devices,
+        ),
+        patch(
             "custom_components.rapt_io.RaptApiClient.get_brewzilla",
-            return_value=mock_telemetry[mock_brewzilla_id],
+            return_value=mock_data[mock_brewzilla_id],
+        ),
+        patch(
+            "custom_components.rapt_io.RaptApiClient.get_bonded_device",
+            return_value=mock_data[mock_bonded_device_id],
         ),
     ):
         await hass.config_entries.async_setup(config_entry.entry_id)
@@ -49,3 +62,12 @@ async def test_sensors(hass: HomeAssistant, config_entry):
     status_state = hass.states.get(status_entity_id)
     assert status_state is not None
     assert status_state.state == "Mashing"
+
+    # Check bonded device temperature sensor
+    bonded_temp_entity_id = "sensor.my_ble_thermometer_temperature"
+    bonded_temp_entity = entity_registry.async_get(bonded_temp_entity_id)
+    assert bonded_temp_entity is not None
+
+    bonded_temp_state = hass.states.get(bonded_temp_entity_id)
+    assert bonded_temp_state is not None
+    assert float(bonded_temp_state.state) == 22.2
