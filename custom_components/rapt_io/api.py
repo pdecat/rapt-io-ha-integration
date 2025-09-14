@@ -1,5 +1,6 @@
 """RAPT.io API Client."""
 
+from datetime import datetime, timedelta, timezone
 import asyncio
 import logging
 import socket
@@ -32,6 +33,7 @@ class RaptApiClient:
         self._api_key = api_key
         # TODO: Implement token storage and management
         self._auth_token = None
+        self._token_expires = None
         self._session = session or aiohttp.ClientSession()
         self._base_url = RAPT_API_BASE_URL
 
@@ -85,10 +87,12 @@ class RaptApiClient:
             # Authentication request uses form-urlencoded data
             response = await self._request("post", auth_url, data=auth_data, is_auth=True)
             self._auth_token = response.get("access_token")
+            expires_in = response.get("expires_in", 3600)
+            self._token_expires = datetime.now(timezone.utc) + timedelta(seconds=expires_in - 60)
             if not self._auth_token:
                 _LOGGER.error("Authentication successful but no access token received: %s", response)
                 raise RaptAuthError("Authentication successful but no access token received")
-            _LOGGER.info("Authentication successful, token acquired.")
+            _LOGGER.info("Authentication successful, token acquired. Expires at %s", self._token_expires)
             return True
         except RaptAuthError as err:
             raise err
@@ -102,41 +106,49 @@ class RaptApiClient:
     async def get_brewzillas(self) -> list[dict]:
         """Fetch the list of BrewZilla devices from the API."""
         _LOGGER.info("Fetching BrewZillas from RAPT.io API")
-        if not self._auth_token:
-            _LOGGER.debug("No auth token found, attempting authentication first.")
-            await self.authenticate()
+        return await self._api_wrapper(self._get_brewzillas_internal)
 
-        try:
-            url = f"{self._base_url}/api/BrewZillas/GetBrewZillas"
-            response = await self._request("get", url)
-            if isinstance(response, list):
-                _LOGGER.debug("Received %d BrewZillas", len(response))
-                return response
-            else:
-                _LOGGER.error("Unexpected BrewZilla list format received: %s", response)
-                raise RaptApiError("Unexpected format for BrewZilla list")
-        except RaptApiError as err:
-            _LOGGER.error("Failed to fetch BrewZillas: %s", err)
-            raise err
+    async def _get_brewzillas_internal(self) -> list[dict]:
+        """Internal method to fetch BrewZillas."""
+        url = f"{self._base_url}/api/BrewZillas/GetBrewZillas"
+        response = await self._request("get", url)
+        if isinstance(response, list):
+            _LOGGER.debug("Received %d BrewZillas", len(response))
+            return response
+        else:
+            _LOGGER.error("Unexpected BrewZilla list format received: %s", response)
+            raise RaptApiError("Unexpected format for BrewZilla list")
 
     async def get_brewzilla(self, brewzilla_id: str) -> dict:
         """Fetch the latest data for a specific BrewZilla."""
         _LOGGER.info("Fetching data for BrewZilla %s", brewzilla_id)
-        if not self._auth_token:
-            _LOGGER.debug("No auth token found, attempting authentication first.")
-            await self.authenticate()
+        return await self._api_wrapper(self._get_brewzilla_internal, brewzilla_id)
 
+    async def _get_brewzilla_internal(self, brewzilla_id: str) -> dict:
+        """Internal method to fetch BrewZilla data."""
+        url = f"{self._base_url}/api/BrewZillas/GetBrewZilla?brewZillaId={brewzilla_id}"
+        response = await self._request("get", url)
+        if isinstance(response, dict):
+            _LOGGER.debug("BrewZilla data received: %s", response)
+            return response
+        else:
+            _LOGGER.error("Unexpected BrewZilla data format received: %s", response)
+            raise RaptApiError("Unexpected format for BrewZilla data")
+
+    async def _api_wrapper(self, func, *args, **kwargs):
+        """Wrap API calls to handle token refresh."""
         try:
-            url = f"{self._base_url}/api/BrewZillas/GetBrewZilla?brewZillaId={brewzilla_id}"
-            response = await self._request("get", url)
-            if isinstance(response, dict):
-                _LOGGER.debug("BrewZilla data received: %s", response)
-                return response
-            else:
-                _LOGGER.error("Unexpected BrewZilla data format received: %s", response)
-                raise RaptApiError("Unexpected format for BrewZilla data")
+            if not self._auth_token or (self._token_expires and self._token_expires < datetime.now(timezone.utc)):
+                _LOGGER.info("Token is missing or expired, re-authenticating.")
+                await self.authenticate()
+            return await func(*args, **kwargs)
+        except RaptAuthError:
+            # This might happen if the token is revoked server-side
+            _LOGGER.warning("Authentication failed, attempting to re-authenticate and retry.")
+            await self.authenticate()
+            return await func(*args, **kwargs)
         except RaptApiError as err:
-            _LOGGER.error("Failed to fetch data for BrewZilla %s: %s", brewzilla_id, err)
+            _LOGGER.error("API error during wrapper call: %s", err)
             raise err
 
     async def close(self) -> None:
