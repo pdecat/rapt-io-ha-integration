@@ -36,9 +36,12 @@ async def async_setup_entry(
     for device in coordinator.devices:
         device_id = device.get("id")
         if device_id:
-            if "telemetry" in device:  # BrewZilla
+            if "telemetry" in device and isinstance(device["telemetry"], dict):  # BrewZilla
                 entities_to_add.append(RaptTemperatureSensor(coordinator, device))
                 entities_to_add.append(RaptStatusSensor(coordinator, device))
+            elif "gravity" in device:  # Hydrometer
+                entities_to_add.append(RaptTemperatureSensor(coordinator, device))
+                entities_to_add.append(RaptGravitySensor(coordinator, device))
             else:  # Bonded Device
                 entities_to_add.append(RaptTemperatureSensor(coordinator, device))
 
@@ -61,7 +64,7 @@ class RaptBaseSensor(CoordinatorEntity, SensorEntity):
             identifiers={(DOMAIN, self._device_id)},
             name=device.get("name"),
             manufacturer="RAPT",
-            model=device.get("type", "BrewZilla"),
+            model=device.get("type", "Unknown Device"),
             # sw_version=... # If available
         )
 
@@ -126,4 +129,29 @@ class RaptStatusSensor(RaptBaseSensor):
         # Access status from coordinator data
         if self.coordinator.data and self._device_id in self.coordinator.data:
             return self.coordinator.data[self._device_id].get("status")
+        return None
+
+
+class RaptGravitySensor(RaptBaseSensor):
+    """Representation of a RAPT Gravity Sensor."""
+
+    _attr_name = "Gravity"
+    _attr_icon = "mdi:gauge"
+    _attr_native_unit_of_measurement = "SG"
+    _attr_suggested_display_precision = 3
+
+    def __init__(self, coordinator: RaptDataUpdateCoordinator, device: dict) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, device)
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID to use for this entity."""
+        return f"{DOMAIN}_{self._device_id}_gravity"
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the state of the sensor."""
+        if self.coordinator.data and self._device_id in self.coordinator.data:
+            return self.coordinator.data[self._device_id].get("gravity")
         return None

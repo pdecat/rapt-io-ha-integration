@@ -42,6 +42,10 @@ The integration will create the following sensors for each supported RAPT.io dev
 ### Bonded Devices (e.g., BLE Thermometers)
 *   `sensor.bonded_device_name_temperature`: The current temperature of the bonded device.
 
+### Hydrometers (e.g., RAPT Pill)
+*   `sensor.hydrometer_name_temperature`: The current temperature of the hydrometer.
+*   `sensor.hydrometer_name_gravity`: The current gravity reading of the hydrometer.
+
 ## Troubleshooting
 
 *   If you have issues, check the Home Assistant logs for errors related to the `rapt_io` integration.
@@ -90,6 +94,5 @@ ruff format .
 
 The following features are planned for future releases:
 
-*   Support for hydrometer devices (e.g. RAPT Pills).
 *   Ability to backfill historical telemetry data.
 *   Support for managing and interacting with brewing profiles.

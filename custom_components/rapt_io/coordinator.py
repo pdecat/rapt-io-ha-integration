@@ -41,7 +41,8 @@ class RaptDataUpdateCoordinator(DataUpdateCoordinator):
             if not self.devices:
                 brewzillas = await self.client.get_brewzillas()
                 bonded_devices = await self.client.get_bonded_devices()
-                self.devices = brewzillas + bonded_devices
+                hydrometers = await self.client.get_hydrometers()
+                self.devices = brewzillas + bonded_devices + hydrometers
                 _LOGGER.debug("Fetched device list: %s", self.devices)
 
             # 2. Iterate through devices and fetch data for each
@@ -52,9 +53,11 @@ class RaptDataUpdateCoordinator(DataUpdateCoordinator):
                     try:
                         # BrewZillas have a 'telemetry' object in their GetBrewZillas response
                         # Bonded devices do not. This is a heuristic to differentiate them.
-                        if "telemetry" in device and isinstance(device["telemetry"], dict):
+                        if "telemetry" in device and isinstance(device["telemetry"], dict):  # BrewZilla
                             data = await self.client.get_brewzilla(device_id)
-                        else:
+                        elif "gravity" in device:  # Hydrometer
+                            data = await self.client.get_hydrometer(device_id)
+                        else:  # Bonded Device
                             data = await self.client.get_bonded_device(device_id)
                         if data:
                             telemetry_data[device_id] = data
