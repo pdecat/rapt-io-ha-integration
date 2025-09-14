@@ -8,7 +8,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfTemperature
+from homeassistant.const import PERCENTAGE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -43,8 +43,10 @@ async def async_setup_entry(
             elif device_type == "Hydrometer":
                 entities_to_add.append(RaptTemperatureSensor(coordinator, device))
                 entities_to_add.append(RaptGravitySensor(coordinator, device))
+                entities_to_add.append(RaptBatterySensor(coordinator, device))
             elif device_type == "BLETemperature":
                 entities_to_add.append(RaptTemperatureSensor(coordinator, device))
+                entities_to_add.append(RaptBatterySensor(coordinator, device))
             else:
                 _LOGGER.warning("Unsupported device type: %s", device_type)
 
@@ -158,4 +160,29 @@ class RaptGravitySensor(RaptBaseSensor):
         """Return the state of the sensor."""
         if self.coordinator.data and self._device_id in self.coordinator.data:
             return self.coordinator.data[self._device_id].get("gravity")
+        return None
+
+
+class RaptBatterySensor(RaptBaseSensor):
+    """Representation of a RAPT Battery Sensor."""
+
+    _attr_name = "Battery"
+    _attr_device_class = SensorDeviceClass.BATTERY
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = PERCENTAGE
+
+    def __init__(self, coordinator: RaptDataUpdateCoordinator, device: dict) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, device)
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID to use for this entity."""
+        return f"{DOMAIN}_{self._device_id}_battery"
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the state of the sensor."""
+        if self.coordinator.data and self._device_id in self.coordinator.data:
+            return self.coordinator.data[self._device_id].get("battery")
         return None

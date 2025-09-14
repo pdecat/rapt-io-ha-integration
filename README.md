@@ -41,10 +41,12 @@ The integration will create the following sensors for each supported RAPT.io dev
 
 ### Bonded Devices (e.g., BLE Thermometers)
 *   `sensor.bonded_device_name_temperature`: The current temperature of the bonded device.
+*   `sensor.bonded_device_name_battery`: The current battery level of the bonded device.
 
 ### Hydrometers (e.g., RAPT Pill)
 *   `sensor.hydrometer_name_temperature`: The current temperature of the hydrometer.
 *   `sensor.hydrometer_name_gravity`: The current gravity reading of the hydrometer.
+*   `sensor.hydrometer_name_battery`: The current battery level of the hydrometer.
 
 ## Troubleshooting
 

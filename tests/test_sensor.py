@@ -21,8 +21,8 @@ async def test_sensors(hass: HomeAssistant, config_entry):
     mock_hydrometers = [{"id": mock_hydrometer_id, "name": "My RAPT Pill", "deviceType": "Hydrometer"}]
     mock_data = {
         mock_brewzilla_id: {"temperature": 65.5, "status": "Mashing"},
-        mock_bonded_device_id: {"temperature": 22.2},
-        mock_hydrometer_id: {"temperature": 20.0, "gravity": 1.052},
+        mock_bonded_device_id: {"temperature": 22.2, "battery": 80},
+        mock_hydrometer_id: {"temperature": 20.0, "gravity": 1.052, "battery": 90},
     }
 
     with (
@@ -83,6 +83,15 @@ async def test_sensors(hass: HomeAssistant, config_entry):
     assert bonded_temp_state is not None
     assert float(bonded_temp_state.state) == 22.2
 
+    # Check bonded device battery sensor
+    bonded_battery_entity_id = "sensor.my_ble_thermometer_battery"
+    bonded_battery_entity = entity_registry.async_get(bonded_battery_entity_id)
+    assert bonded_battery_entity is not None
+
+    bonded_battery_state = hass.states.get(bonded_battery_entity_id)
+    assert bonded_battery_state is not None
+    assert int(bonded_battery_state.state) == 80
+
     # Check hydrometer sensors
     hydrometer_temp_entity_id = "sensor.my_rapt_pill_temperature"
     hydrometer_temp_entity = entity_registry.async_get(hydrometer_temp_entity_id)
@@ -99,3 +108,12 @@ async def test_sensors(hass: HomeAssistant, config_entry):
     hydrometer_gravity_state = hass.states.get(hydrometer_gravity_entity_id)
     assert hydrometer_gravity_state is not None
     assert float(hydrometer_gravity_state.state) == 1.052
+
+    # Check hydrometer battery sensor
+    hydrometer_battery_entity_id = "sensor.my_rapt_pill_battery"
+    hydrometer_battery_entity = entity_registry.async_get(hydrometer_battery_entity_id)
+    assert hydrometer_battery_entity is not None
+
+    hydrometer_battery_state = hass.states.get(hydrometer_battery_entity_id)
+    assert hydrometer_battery_state is not None
+    assert int(hydrometer_battery_state.state) == 90
