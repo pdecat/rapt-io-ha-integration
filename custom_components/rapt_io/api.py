@@ -119,22 +119,6 @@ class RaptApiClient:
             _LOGGER.error("Unexpected BrewZilla list format received: %s", response)
             raise RaptApiError("Unexpected format for BrewZilla list")
 
-    async def get_brewzilla(self, brewzilla_id: str) -> dict:
-        """Fetch the latest data for a specific BrewZilla."""
-        _LOGGER.info("Fetching data for BrewZilla %s", brewzilla_id)
-        return await self._api_wrapper(self._get_brewzilla_internal, brewzilla_id)
-
-    async def _get_brewzilla_internal(self, brewzilla_id: str) -> dict:
-        """Internal method to fetch BrewZilla data."""
-        url = f"{self._base_url}/api/BrewZillas/GetBrewZilla?brewZillaId={brewzilla_id}"
-        response = await self._request("get", url)
-        if isinstance(response, dict):
-            _LOGGER.debug("BrewZilla data received: %s", response)
-            return response
-        else:
-            _LOGGER.error("Unexpected BrewZilla data format received: %s", response)
-            raise RaptApiError("Unexpected format for BrewZilla data")
-
     async def _api_wrapper(self, func, *args, **kwargs):
         """Wrap API calls to handle token refresh."""
         try:
@@ -184,22 +168,6 @@ class RaptApiClient:
             _LOGGER.error("Unexpected Bonded Device list format received: %s", response)
             raise RaptApiError("Unexpected format for Bonded Device list")
 
-    async def get_bonded_device(self, bonded_device_id: str) -> dict:
-        """Fetch the latest data for a specific Bonded Device."""
-        _LOGGER.info("Fetching data for Bonded Device %s", bonded_device_id)
-        return await self._api_wrapper(self._get_bonded_device_internal, bonded_device_id)
-
-    async def _get_bonded_device_internal(self, bonded_device_id: str) -> dict:
-        """Internal method to fetch Bonded Device data."""
-        url = f"{self._base_url}/api/BondedDevices/GetBondedDevice?bondedDeviceId={bonded_device_id}"
-        response = await self._request("get", url)
-        if isinstance(response, dict):
-            _LOGGER.debug("Bonded Device data received: %s", response)
-            return response
-        else:
-            _LOGGER.error("Unexpected Bonded Device data format received: %s", response)
-            raise RaptApiError("Unexpected format for Bonded Device data")
-
     async def get_hydrometers(self) -> list[dict]:
         """Fetch the list of Hydrometer devices from the API."""
         _LOGGER.info("Fetching Hydrometers from RAPT.io API")
@@ -215,19 +183,3 @@ class RaptApiClient:
         else:
             _LOGGER.error("Unexpected Hydrometer list format received: %s", response)
             raise RaptApiError("Unexpected format for Hydrometer list")
-
-    async def get_hydrometer(self, hydrometer_id: str) -> dict:
-        """Fetch the latest data for a specific Hydrometer."""
-        _LOGGER.info("Fetching data for Hydrometer %s", hydrometer_id)
-        return await self._api_wrapper(self._get_hydrometer_internal, hydrometer_id)
-
-    async def _get_hydrometer_internal(self, hydrometer_id: str) -> dict:
-        """Internal method to fetch Hydrometer data."""
-        url = f"{self._base_url}/api/Hydrometers/GetHydrometer?hydrometerId={hydrometer_id}"
-        response = await self._request("get", url)
-        if isinstance(response, dict):
-            _LOGGER.debug("Hydrometer data received: %s", response)
-            return response
-        else:
-            _LOGGER.error("Unexpected Hydrometer data format received: %s", response)
-            raise RaptApiError("Unexpected format for Hydrometer data")

@@ -14,16 +14,36 @@ async def test_sensors(hass: HomeAssistant, config_entry):
 
     # Mock device and telemetry data
     mock_brewzilla_id = "a1b2c3d4-e5f6-7890-1234-567890abcdef"
-    mock_brewzillas = [{"id": mock_brewzilla_id, "name": "My Test BrewZilla", "deviceType": "BrewZilla"}]
+    mock_brewzillas = [
+        {
+            "id": mock_brewzilla_id,
+            "name": "My Test BrewZilla",
+            "deviceType": "BrewZilla",
+            "temperature": 65.5,
+            "status": "Mashing",
+        }
+    ]
     mock_bonded_device_id = "e5f6a1b2-c3d4-5678-9012-345678abcdef"
-    mock_bonded_devices = [{"id": mock_bonded_device_id, "name": "My BLE Thermometer", "deviceType": "BLETemperature"}]
+    mock_bonded_devices = [
+        {
+            "id": mock_bonded_device_id,
+            "name": "My BLE Thermometer",
+            "deviceType": "BLETemperature",
+            "temperature": 22.2,
+            "battery": 80,
+        }
+    ]
     mock_hydrometer_id = "f1e2d3c4-b5a6-7890-1234-567890abcdef"
-    mock_hydrometers = [{"id": mock_hydrometer_id, "name": "My RAPT Pill", "deviceType": "Hydrometer"}]
-    mock_data = {
-        mock_brewzilla_id: {"temperature": 65.5, "status": "Mashing"},
-        mock_bonded_device_id: {"temperature": 22.2, "battery": 80},
-        mock_hydrometer_id: {"temperature": 20.0, "gravity": 1.052, "battery": 90},
-    }
+    mock_hydrometers = [
+        {
+            "id": mock_hydrometer_id,
+            "name": "My RAPT Pill",
+            "deviceType": "Hydrometer",
+            "temperature": 20.0,
+            "gravity": 1.052,
+            "battery": 90,
+        }
+    ]
 
     with (
         patch(
@@ -37,18 +57,6 @@ async def test_sensors(hass: HomeAssistant, config_entry):
         patch(
             "custom_components.rapt_io.RaptApiClient.get_hydrometers",
             return_value=mock_hydrometers,
-        ),
-        patch(
-            "custom_components.rapt_io.RaptApiClient.get_brewzilla",
-            return_value=mock_data[mock_brewzilla_id],
-        ),
-        patch(
-            "custom_components.rapt_io.RaptApiClient.get_bonded_device",
-            return_value=mock_data[mock_bonded_device_id],
-        ),
-        patch(
-            "custom_components.rapt_io.RaptApiClient.get_hydrometer",
-            return_value=mock_data[mock_hydrometer_id],
         ),
     ):
         await hass.config_entries.async_setup(config_entry.entry_id)

@@ -38,39 +38,19 @@ class RaptDataUpdateCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("Starting data update cycle")
         try:
             # 1. Get the list of devices (if not already stored)
-            if not self.devices:
-                brewzillas = await self.client.get_brewzillas()
-                bonded_devices = await self.client.get_bonded_devices()
-                hydrometers = await self.client.get_hydrometers()
-                self.devices = brewzillas + bonded_devices + hydrometers
-                _LOGGER.debug("Fetched device list: %s", self.devices)
+            brewzillas = await self.client.get_brewzillas()
+            bonded_devices = await self.client.get_bonded_devices()
+            hydrometers = await self.client.get_hydrometers()
+            self.devices = brewzillas + bonded_devices + hydrometers
 
-            # 2. Iterate through devices and fetch data for each
-            telemetry_data = {}
+            all_devices_data = {}
             for device in self.devices:
                 device_id = device.get("id")
                 if device_id:
-                    try:
-                        # BrewZillas have a 'telemetry' object in their GetBrewZillas response
-                        # Bonded devices do not. This is a heuristic to differentiate them.
-                        device_type = device.get("deviceType")
-                        if device_type == "BrewZilla":
-                            data = await self.client.get_brewzilla(device_id)
-                        elif device_type == "Hydrometer":
-                            data = await self.client.get_hydrometer(device_id)
-                        elif device_type == "BLETemperature":
-                            data = await self.client.get_bonded_device(device_id)
-                        else:
-                            _LOGGER.warning("Unsupported device type: %s", device_type)
-                            data = None
-                        if data:
-                            telemetry_data[device_id] = data
-                    except RaptApiError as err:
-                        # Log individual device fetch errors, but continue updating others
-                        _LOGGER.warning("Failed to fetch data for device %s: %s", device_id, err)
+                    all_devices_data[device_id] = device
 
-            _LOGGER.debug("Telemetry data: %s", telemetry_data)
-            return telemetry_data
+            _LOGGER.debug("Updated data for %d devices", len(all_devices_data))
+            return all_devices_data
 
         except RaptAuthError as err:
             # Authentication errors likely require re-configuration

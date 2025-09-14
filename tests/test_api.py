@@ -60,24 +60,6 @@ async def test_api_client_get_brewzillas(hass):
         mock_request.assert_called_once()
 
 
-async def test_api_client_get_brewzilla(hass):
-    """Test successful BrewZilla data retrieval."""
-    with patch(
-        "custom_components.rapt_io.api.RaptApiClient._request",
-        new_callable=AsyncMock,
-        return_value={"temperature": 25.0, "status": "Mashing"},
-    ) as mock_request:
-        client = RaptApiClient(
-            username="test_username",
-            api_key="test_api_key",
-            session=hass.helpers.aiohttp_client.async_get_clientsession(),
-        )
-        client._auth_token = "test_token"  # Simulate authentication
-        data = await client.get_brewzilla(brewzilla_id="brewzilla_1")
-        assert data["temperature"] == 25.0
-        mock_request.assert_called_once()
-
-
 async def test_api_client_request_error(hass):
     """Test API request error handling."""
     with patch(
