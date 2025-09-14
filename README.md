@@ -86,6 +86,7 @@ ruff format .
 
 The following features are planned for future releases:
 
-*   Support for bonded devices (e.g., RAPT Pill, BLE Thermometers).
+*   Support for bonded devices (e.g. BLE Thermometers).
+*   Support for hydrometer devices (e.g. RAPT Pills).
 *   Ability to backfill historical telemetry data.
 *   Support for managing and interacting with brewing profiles.
